@@ -1,7 +1,7 @@
 from django.urls import path
-from users.views import Signup, Signin
+from historys.views import *
 
 urlpatterns = [
-    path("signup/", Signup.as_view()),
-    path("signin/", Signin.as_view()),
+    path("", set_history.as_view()),
+    path("<int:history_id>/", update_history.as_view()),
 ]
