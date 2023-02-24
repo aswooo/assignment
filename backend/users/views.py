@@ -1,19 +1,17 @@
 from django.contrib.auth import authenticate
-from django.core.cache import cache
 from django.db import transaction
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from users.models import User
 from users.serializer import SignupSerializer, SigninSerializer
-from rest_framework_simplejwt.views import TokenRefreshView
-import jwt
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 class Signup(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = ([AllowAny])
 
     @transaction.atomic
     def post(self, request):
@@ -38,7 +36,7 @@ class Signup(APIView):
 
 
 class Signin(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = ([AllowAny])
 
     @transaction.atomic
     def post(self, request):
@@ -46,7 +44,6 @@ class Signin(APIView):
             email=request.data.get("email"), password=request.data.get("password")
         )
         if user is not None:
-            # user_data = User.objects.get(email=request.data.get("email"))
             serializer = SigninSerializer(user)
             if user.is_delete:
                 token = TokenObtainPairSerializer.get_token(user)
@@ -66,3 +63,13 @@ class Signin(APIView):
                 return Response(status=status.HTTP_401_UNAUTHORIZED)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class Logout(APIView):
+    permission_classes = ([IsAuthenticated])
+
+    def post(self, request):
+        refresh_token = request.data["refresh_token"]
+        token = RefreshToken(refresh_token)
+        token.blacklist()
+        return Response(status=status.HTTP_200_OK)

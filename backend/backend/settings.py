@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "historys",
     "users",
+    'rest_framework_simplejwt.token_blacklist',
 ]
 
 AUTH_USER_MODEL = "users.User"
