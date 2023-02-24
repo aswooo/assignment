@@ -1,12 +1,10 @@
-from django.contrib.auth import authenticate
-from django.core.cache import cache
 from django.db import transaction
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from historys.models import history
 from historys.serializer import *
+from rest_framework.permissions import IsAuthenticated
 
 
 def search_user(request):
@@ -18,7 +16,9 @@ def search_user(request):
     return user
 
 
-class set_history(APIView):
+class History(APIView):
+    permission_classes = ([IsAuthenticated])
+
     @transaction.atomic
     def post(self, request):
         user = search_user(request)
@@ -43,7 +43,20 @@ class set_history(APIView):
         return Response(serializer.data, status=201)
 
 
-class update_history(APIView):
+class Update_history(APIView):
+    permission_classes = ([IsAuthenticated])
+
+    def get(self, request, history_id):
+        user = search_user(request)  # 토큰의 유효성 검사
+        if user is None:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        try:
+            data = history.objects.get(history_id=history_id)
+            serializer = get_history_serializer(data)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
     @transaction.atomic
     def put(self, request, history_id):
         user = search_user(request)  # 토큰의 유효성 검사
