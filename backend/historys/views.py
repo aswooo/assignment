@@ -25,7 +25,7 @@ class History(APIView):
         if user is None:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
         data = request.data
-        data["balance"] = user.balacne
+        data["balance"] = user.balance
         data["fk_user"] = user.id
         if request.data.get("is_spend"):
             data["balance"] -= request.data["cost"]
@@ -41,6 +41,20 @@ class History(APIView):
         else:
             Response(status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.data, status=201)
+
+    def get(self, request):
+        user = search_user(request)  # 토큰의 유효성 검사
+        if user is None:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        try:
+            result = []
+            data = history.objects.filter(fk_user=user)
+            for i in data:
+                serializer = get_history_serializer(i)
+                result.append(serializer.data)
+            return Response(result, status=status.HTTP_200_OK)
+        except:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class Update_history(APIView):
